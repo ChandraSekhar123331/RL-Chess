@@ -1,0 +1,38 @@
+/*useful variables*/
+:root{
+	--white : #908d8d;
+	--black : #522c2cc9;
+	--col_sz : 100px ;
+	--row_sz : 88px;
+}
+
+div{
+	display: block;
+	background-color: orange;
+	height: var(--row_sz);
+	width: 800px;
+	margin: auto;
+}
+div div{
+	float: left;
+}
+div.odd div:nth-child(odd){
+	background-color: var(--white);
+	width: var(--col_sz);
+	height: var(--row_sz);
+}
+div.odd div:nth-child(even){
+	background-color: var(--black);
+	width: var(--col_sz);
+	height: var(--row_sz);
+}
+div.even div:nth-child(odd){
+	background-color: var(--black);
+	width: var(--col_sz);
+	height: var(--row_sz);
+}
+div.even div:nth-child(even){
+	background-color: var(--white);
+	width: var(--col_sz);
+	height: var(--row_sz);
+}
