@@ -7,20 +7,22 @@ class Cell:
         self.surf = pygame.Surface(dim)
         self.pos = pos
         self.dim = dim
-        screen.blit(self.surf,pos)
+        self.screen = screen
+        self.screen.blit(self.surf,self.pos)
     
-    def fill_color(self,screen,color):
-        self.surf.fill(color)
-        screen.blit(self.surf,self.pos)
+    def fill_color(self,color):
+        self.color = color
+        self.surf.fill(self.color)
+        self.screen.blit(self.surf,self.pos)
     
-    def render(self,screen,image):
+    def render(self,image):
         if image == "":
             pass
         else:
             img = pygame.image.load(image)
             img = pygame.transform.scale(img,self.dim)
             self.surf = img.convert_alpha()
-            screen.blit(self.surf,self.pos)
+            self.screen.blit(self.surf,self.pos)
             # self.surf.set_colorkey((255, 255, 255), RLEACCEL)
 
     
