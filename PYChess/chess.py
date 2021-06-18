@@ -39,7 +39,7 @@ while(True):
     old_config = copy.deepcopy(board.board_config)
     board.handle_mouse(ans[0][0],ans[0][1])
     pygame.display.update()
-    time.sleep(0.5)
+    time.sleep(0.1)
     board.handle_mouse(ans[1][0],ans[1][1])
     pygame.display.update()
     new_config = board.board_config
@@ -56,7 +56,7 @@ while(True):
         player.update(-1,old_config,new_config)
         print("white has won")
         game_over = True
-    time.sleep(0.5)
+    time.sleep(0.1)
     if game_over:
         del board
         board = chess_board.Board(screen,cell_w,cell_h,"white")

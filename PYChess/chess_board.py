@@ -115,6 +115,7 @@ class Board:
             self.is_selected = False
             self.movable_posns = []
             self.handle_board_config(cell_row,cell_col)
+            self.cells[self.selected_piece[0]][self.selected_piece[1]].reset()
             self.selected_piece = None
         else:
             print("please click on the highlighted boxes to move or click esc to cancel the selected piece")
@@ -144,7 +145,7 @@ class Board:
             self.movable_posns = rules.move_king(self.board_config,cell_row,cell_col)
         else:
             assert(False)
-        print(self.movable_posns)
+        # print(self.movable_posns)
 
         if len(self.movable_posns) == 0:
             print("The selected piece has no possibility to move")
@@ -152,13 +153,14 @@ class Board:
         self.is_selected = True
         self.selected_piece = [cell_row,cell_col]
         self.render_move_posns()
+        self.cells[cell_row][cell_col].show_as_selected()
         ##Okay so we need to handle the case on is_selected as well
         return
     def handle_escape(self):
         self.reset_move_posns()
         self.movable_posns = []
         self.is_selected = False
-        print("escape key was selected")\
+        print("escape key was selected")
 
     def render_move_posns(self):
         for row,col in self.movable_posns:

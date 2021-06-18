@@ -6,10 +6,15 @@ class rl_player:
         #dimension should say the size of linear approximator excluding the bias term.It is added inherently by the linear_approximator class 
         self.epsilon = 0.1
         self.alpha = 0.01
-        self.model = Linear(dimension,self.alpha)
+        try:
+            param_init = np.load("param.npy")
+            self.model = Linear(dimension,self.alpha,param_init)
+        except:
+            self.model = Linear(dimension,self.alpha)
         self.rng = np.random.default_rng()
 
     def get_move(self,board_config,current_move):
+        np.save("param",self.model.param)
         all_moves = self.get_all_moves(board_config,current_move)
         start,end = self.select_move(board_config,all_moves,current_move)
         return (start,end)
@@ -18,11 +23,17 @@ class rl_player:
         for i in range(8):
             for j in range(8):
                 if board_config[i][j][-5:] == current_move :
-                    moves = rules.get_moves(board_config,i,j)        
+                    moves = rules.get_moves_improved(board_config,i,j)        
                     for move in moves:
                         all_moves.append([(i,j),tuple(move)])
         return all_moves
     def select_move(self,board_config,all_moves,current_move):
+        #if opposite color king is there in you possible moves immediately kill it
+        req_col = "white" if current_move == "black" else "black"
+        for move in all_moves:
+            if board_config[move[1][0]][move[1][1]] == f"king_{req_col}":
+                return move
+
         rand_num = np.random.random()
         if rand_num < self.epsilon:
             return all_moves[np.random.randint(0,len(all_moves))]
@@ -36,7 +47,7 @@ class rl_player:
                 # print("ha",board_vec)
                 evaluations.append(self.model.get_val(board_vec))
             evaluations = np.array(evaluations)
-            print(self.model.param)
+            # print(self.model.param)
             if current_move == "white":
                 # print(np.random.choice(np.flatnonzero(evaluations == np.max(evaluations))))
                 return all_moves[np.random.choice(np.flatnonzero(evaluations == np.max(evaluations)))]

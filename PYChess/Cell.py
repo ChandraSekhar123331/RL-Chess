@@ -42,6 +42,10 @@ class Cell:
         self.surf.fill([255, 0, 0])
         self.blit_cell()
         self.render(self.image)
+    def show_as_selected(self):
+        self.surf.fill([0, 255, 26])
+        self.blit_cell()
+        self.render(self.image)
     def reset(self):
         self.surf.fill(self.color)
         self.blit_cell()

@@ -246,6 +246,26 @@ def get_moves(board_config,row,col):
         return move_queen(board_config,row,col)
     if board_config[row][col][:-6] == "king":
         return move_king(board_config,row,col)
+def get_all_moves(board_config,current_move):
+    move_posn = []
+    for i in range(8):
+        for j in range(8):
+            if board_config[i][j][-5:] == f"{current_move}":
+                move_posn += get_moves(board_config,i,j)
+
+    return move_posn
+
+def get_moves_improved(board_config,row,col):
+    #this additionally checks if king is in a chek or not
+    current_move = board_config[row][col][-5:]
+    check_occured_info = check_occured(board_config,current_move)
+    if check_occured_info[0] == True:
+        if board_config[row][col][:-6] == "king":
+            return check_occured_info[1:]
+        else:
+            return []
+    else:
+        return get_moves(board_config,row,col)
 def board_to_vec(board_config,start,dest):
     vec = []
     for i in range(8):
@@ -257,30 +277,62 @@ def board_to_vec(board_config,start,dest):
             else:
                 piece = board_config[i][j]
 
-            vec.append(assign_value(piece))
+            vec.append(assign_value(piece,board_config[i][j][-5:]))
     return vec
 def get_vec(board_config):
     vec = []
     for i in range(8):
         for j in range(8):
             piece = board_config[i][j]
-            vec.append(assign_value(piece))
+            vec.append(assign_value(piece,board_config[i][j][-5:]))
     return vec
-def assign_value(piece):
+def assign_value(piece,color):
     if piece == "":
         return 0
+    val = None
     piece = piece[:-6]
     if piece == "pawn":
-        return 1
+        val = 1
     if piece == "rook":
-        return 5
+        val = 5
     if piece == "knight":
-        return 3
+        val = 3
     if piece == "bishop":
-        return 3
+        val = 3
     if piece == "queen":
-        return 9
-    assert(piece == "king")
-    return 2
-    
-    
+        val = 9
+    if piece == "king":
+        val = 2
+    if color == "white":return -1*val
+    else: return val
+
+def check_occured(board_config,current_move):
+    # if(current_move == "white"):
+    king_pos = None 
+    for i in range(8):
+        for j in range(8):
+            if board_config[i][j] == f"king_{current_move}":
+                king_pos =  (i,j)
+                break
+        if king_pos: break
+    opp_color = "white" if current_move == "black" else "black"
+    danger_posns = get_all_moves(board_config,opp_color)
+    if king_pos in danger_posns:
+        safe_posns_king = []
+        valid_posns_king = []
+        for row_inc in [+1,-1,0]:
+            for col_inc in [+1,-1,0]:
+                if row_inc == col_inc ==0:continue
+                fin_row = king_pos[0] + row_inc
+                fin_col = king_pos[1] + col_inc
+                if valid_cell(fin_row,fin_col):
+                    valid_posns_king.append([fin_row,fin_col])
+                if valid_cell(fin_row,fin_col) and [fin_row,fin_col] not in danger_posns :
+                    safe_posns_king.append([fin_row,fin_col])
+        if safe_posns_king:
+            return (True,safe_posns_king)
+        else:
+            return (True,valid_posns_king)
+    return (False,)
+
+

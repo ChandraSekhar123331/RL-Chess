@@ -1,7 +1,10 @@
 import numpy as np
 class Linear:
-    def __init__(self,dimension,alpha):
-        self.param = np.zeros(dimension + 1)
+    def __init__(self,dimension,alpha,param_init = None):
+        if param_init:
+            self.param = param_init
+        else:
+            self.param = np.zeros(dimension + 1)
         self.dimension = dimension + 1 #+1 for the constant term
         self.alpha = alpha
     # def logistic(self, x):
@@ -17,7 +20,7 @@ class Linear:
         feature_vector = np.array([1]+feature_vector)
         # print(feature_vector)
         arg = feature_vector.dot(self.param)
-        delta_param =self.alpha*(est_val-arg)*feature_vector
+        delta_param = self.alpha*(est_val-arg)*feature_vector
         self.param += delta_param
     
 
