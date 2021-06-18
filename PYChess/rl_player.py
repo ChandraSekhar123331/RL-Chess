@@ -36,9 +36,19 @@ class rl_player:
                 # print("ha",board_vec)
                 evaluations.append(self.model.get_val(board_vec))
             evaluations = np.array(evaluations)
+            print(self.model.param)
             if current_move == "white":
                 # print(np.random.choice(np.flatnonzero(evaluations == np.max(evaluations))))
                 return all_moves[np.random.choice(np.flatnonzero(evaluations == np.max(evaluations)))]
             else:
                 # print(np.random.choice(np.flatnonzero(evaluations == np.min(evaluations))))
-                return all_moves[np.random.choice(np.flatnonzero(evaluations == np.min(evaluations)))]
+                return all_moves[np.random.choice(np.flatnonzero(np.isclose(evaluations, np.min(evaluations))))]
+    def update(self,reward,old_config,new_config):
+        old_config_vec = rules.get_vec(old_config)
+        new_config_vec = rules.get_vec(new_config)
+        est_value = reward + self.model.get_val(new_config_vec)
+        # print(old_config_vec)
+        # print(new_config_vec)
+        # print(est_value)
+        self.model.upd_param(est_value,old_config_vec)
+

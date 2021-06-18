@@ -174,3 +174,19 @@ class Board:
         #this is to maintain the board config after moving the selected piece to [cell_row,cell_col]
         self.board_config[cell_row][cell_col] = self.board_config[self.selected_piece[0]][self.selected_piece[1]]
         self.board_config[self.selected_piece[0]][self.selected_piece[1]] = ""
+    def get_winner(self):
+        black = False
+        white = False
+        for i in range(8):
+            for j in range(8):
+                if self.board_config[i][j][:-6]=="king":
+                    if self.board_config[i][j][-5:] == "white":
+                        white = True
+                    else:
+                        black = True
+
+        if not black:
+            return "white"
+        if not white:
+            return "black"
+        return "noone"

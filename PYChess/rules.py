@@ -259,7 +259,13 @@ def board_to_vec(board_config,start,dest):
 
             vec.append(assign_value(piece))
     return vec
-
+def get_vec(board_config):
+    vec = []
+    for i in range(8):
+        for j in range(8):
+            piece = board_config[i][j]
+            vec.append(assign_value(piece))
+    return vec
 def assign_value(piece):
     if piece == "":
         return 0

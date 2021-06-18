@@ -1,8 +1,11 @@
 import pygame
 import sys
+
+from pygame import display
 from rl_player import rl_player
 import time
 from pygame.constants import K_ESCAPE
+import copy
 # import random
 import chess_board
 pygame.init()
@@ -33,12 +36,32 @@ while(True):
                 board.handle_escape()
 
     ans=player.get_move(board.board_config,board.current_move)
+    old_config = copy.deepcopy(board.board_config)
     board.handle_mouse(ans[0][0],ans[0][1])
     pygame.display.update()
     time.sleep(0.5)
     board.handle_mouse(ans[1][0],ans[1][1])
     pygame.display.update()
+    new_config = board.board_config
+    winner = board.get_winner()
+    game_over = False
+    if winner == "noone":
+        player.update(0,old_config,new_config)
+    elif winner == "black":
+        player.update(1,old_config,new_config)
+        print("black has won")
+        game_over = True
+    else:
+        print(winner)
+        player.update(-1,old_config,new_config)
+        print("white has won")
+        game_over = True
     time.sleep(0.5)
+    if game_over:
+        del board
+        board = chess_board.Board(screen,cell_w,cell_h,"white")
+    pygame.display.update()
+
     
     # left, middle, right = pygame.mouse.get_pressed()
     # if left:
