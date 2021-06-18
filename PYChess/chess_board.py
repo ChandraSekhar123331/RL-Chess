@@ -1,5 +1,6 @@
 import pygame
 from Cell import Cell
+import rules
 class Board:
     def __init__(self,screen,cell_w,cell_h,current_move):
         #number of cells is 64
@@ -130,17 +131,17 @@ class Board:
         # self.is_selected = True ##this line is to be done only if movable positions is non_empty
         piece_name = piece[:-6]
         if piece_name == "pawn":
-            self.move_pawn(cell_row,cell_col)
+            self.movable_posns = rules.move_pawn(self.board_config,cell_row,cell_col)
         elif piece_name == "rook":
-            self.move_rook(cell_row,cell_col)
+            self.movable_posns = rules.move_rook(self.board_config,cell_row,cell_col)
         elif piece_name == "knight":
-            self.move_knight(cell_row,cell_col)
+            self.movable_posns = rules.move_knight(self.board_config,cell_row,cell_col)
         elif piece_name == "bishop":
-            self.move_bishop(cell_row,cell_col)
+            self.movable_posns = rules.move_bishop(self.board_config,cell_row,cell_col)
         elif piece_name == "queen":
-            self.move_queen(cell_row,cell_col)
+            self.movable_posns = rules.move_queen(self.board_config,cell_row,cell_col)
         elif piece_name == "king":
-            self.move_king(cell_row,cell_col)
+            self.movable_posns = rules.move_king(self.board_config,cell_row,cell_col)
         else:
             assert(False)
         print(self.movable_posns)
@@ -157,221 +158,11 @@ class Board:
         self.reset_move_posns()
         self.movable_posns = []
         self.is_selected = False
-        print("escape key was selected")
-        
-    def move_pawn(self,cell_row,cell_col):
-        if self.current_move == "white":
-            if cell_row == 6:
-                for row_inc in [-1,-2]:
-                    fin_row = cell_row + row_inc
-                    fin_col = cell_col 
-                    if self.valid_cell(fin_row,fin_col):
-                        occ = self.occupied(fin_row,fin_col)
-                        # enemy_occ= self.has_enemy(fin_row,fin_col)
-                        if not occ:
-                            self.movable_posns.append([fin_row,fin_col])
-                        else:
-                            break
-            else:
-                for row_inc in [-1]:
-                    fin_row = cell_row + row_inc
-                    fin_col = cell_col 
-                    if self.valid_cell(fin_row,fin_col):
-                        occ = self.occupied(fin_row,fin_col)
-                        # enemy_occ= self.has_enemy(fin_row,fin_col)
-                        if not occ:
-                            self.movable_posns.append([fin_row,fin_col])
-                        else:
-                            break
-            
-            for row_inc in [-1]:
-                for col_inc in [+1,-1]:
-                    fin_row = cell_row + row_inc
-                    fin_col = cell_col + col_inc
-                    if self.valid_cell(fin_row,fin_col):
-                        if self.has_enemy(fin_row,fin_col):
-                            self.movable_posns.append([fin_row,fin_col])
+        print("escape key was selected")\
 
-            
-        else:
-            assert(self.current_move == "black")
-            if cell_row == 1:
-                for row_inc in [1,2]:
-                    fin_row = cell_row + row_inc
-                    fin_col = cell_col 
-                    if self.valid_cell(fin_row,fin_col):
-                        occ = self.occupied(fin_row,fin_col)
-                        # enemy_occ= self.has_enemy(fin_row,fin_col)
-                        if not occ:
-                            self.movable_posns.append([fin_row,fin_col])
-                        else:
-                            break
-            else:
-                for row_inc in [1]:
-                    fin_row = cell_row + row_inc
-                    fin_col = cell_col 
-                    if self.valid_cell(fin_row,fin_col):
-                        occ = self.occupied(fin_row,fin_col)
-                        # enemy_occ= self.has_enemy(fin_row,fin_col)
-                        if not occ:
-                            self.movable_posns.append([fin_row,fin_col])
-                        else:
-                            break
-            for row_inc in [+1]:
-                for col_inc in [+1,-1]:
-                    fin_row = cell_row + row_inc
-                    fin_col = cell_col + col_inc
-                    if self.valid_cell(fin_row,fin_col):
-                        if self.has_enemy(fin_row,fin_col):
-                            self.movable_posns.append([fin_row,fin_col])                
-    def move_rook(self,cell_row,cell_col):
-        for row_inc in range(1,8):
-            col_inc = 0
-            fin_row = cell_row + row_inc
-            fin_col = cell_col + col_inc
-            if self.valid_cell(fin_row,fin_col):
-                if self.occupied(fin_row,fin_col):
-                    if(self.has_enemy(fin_row,fin_col)):
-                        self.movable_posns.append([fin_row,fin_col])
-                    break
-                else:
-                    self.movable_posns.append([fin_row,fin_col])
-        for row_inc in range(-1,-8,-1):
-            col_inc = 0
-            fin_row = cell_row + row_inc
-            fin_col = cell_col + col_inc
-            if self.valid_cell(fin_row,fin_col):
-                if self.occupied(fin_row,fin_col):
-                    if(self.has_enemy(fin_row,fin_col)):
-                        self.movable_posns.append([fin_row,fin_col])
-                    break
-                else:
-                    self.movable_posns.append([fin_row,fin_col])
-
-        for col_inc in range(1,8):
-            row_inc = 0
-            fin_row = cell_row + row_inc
-            fin_col = cell_col + col_inc
-            if self.valid_cell(fin_row,fin_col):
-                if self.occupied(fin_row,fin_col):
-                    if(self.has_enemy(fin_row,fin_col)):
-                        self.movable_posns.append([fin_row,fin_col])
-                    break
-                else:
-                    self.movable_posns.append([fin_row,fin_col])
-        for col_inc in range(-1,-8,-1):
-            row_inc = 0
-            fin_row = cell_row + row_inc
-            fin_col = cell_col + col_inc
-            if self.valid_cell(fin_row,fin_col):
-                if self.occupied(fin_row,fin_col):
-                    if(self.has_enemy(fin_row,fin_col)):
-                        self.movable_posns.append([fin_row,fin_col])
-                    break
-                else:
-                    self.movable_posns.append([fin_row,fin_col])
-    def move_knight(self,cell_row,cell_col):
-        for row_inc in [-1,+1]:
-            for col_inc in [-2,+2]:
-                fin_row = cell_row + row_inc
-                fin_col = cell_col + col_inc
-                if self.valid_cell(fin_row,fin_col):
-                    if not self.occupied(fin_row,fin_col):
-                        self.movable_posns.append([fin_row,fin_col])
-                        continue
-                    if self.has_enemy(fin_row,fin_col):
-                        self.movable_posns.append([fin_row,fin_col])
-
-        for row_inc in [-2,+2]:
-            for col_inc in [-1,+1]:
-                fin_row = cell_row + row_inc
-                fin_col = cell_col + col_inc
-                if self.valid_cell(fin_row,fin_col):
-                    if not self.occupied(fin_row,fin_col):
-                        self.movable_posns.append([fin_row,fin_col])
-                        continue
-                    if self.has_enemy(fin_row,fin_col):
-                        self.movable_posns.append([fin_row,fin_col])
-    def move_bishop(self,cell_row,cell_col):
-        for inc in range(1,8):
-            row_inc = col_inc = inc
-            fin_row = cell_row + row_inc
-            fin_col = cell_col + col_inc
-            if self.valid_cell(fin_row,fin_col):
-                if not self.occupied(fin_row,fin_col):
-                    self.movable_posns.append([fin_row,fin_col])
-                else:
-                    if self.has_enemy(fin_row,fin_col):
-                        self.movable_posns.append([fin_row,fin_col])
-                    break
-
-        for inc in range(-1,-8,-1):
-            row_inc = col_inc = inc
-            fin_row = cell_row + row_inc
-            fin_col = cell_col + col_inc
-            if self.valid_cell(fin_row,fin_col):
-                if not self.occupied(fin_row,fin_col):
-                    self.movable_posns.append([fin_row,fin_col])
-                else:
-                    if self.has_enemy(fin_row,fin_col):
-                        self.movable_posns.append([fin_row,fin_col])
-                    break
-                
-        for inc in range(1,8):
-            row_inc = inc
-            col_inc = -inc
-            fin_row = cell_row + row_inc
-            fin_col = cell_col + col_inc
-            if self.valid_cell(fin_row,fin_col):
-                if not self.occupied(fin_row,fin_col):
-                    self.movable_posns.append([fin_row,fin_col])
-                else:
-                    if self.has_enemy(fin_row,fin_col):
-                        self.movable_posns.append([fin_row,fin_col])
-                    break
-
-        for inc in range(-1,-8,-1):
-            row_inc = inc
-            col_inc = -inc
-            fin_row = cell_row + row_inc
-            fin_col = cell_col + col_inc
-            if self.valid_cell(fin_row,fin_col):
-                if not self.occupied(fin_row,fin_col):
-                    self.movable_posns.append([fin_row,fin_col])
-                else:
-                    if self.has_enemy(fin_row,fin_col):
-                        self.movable_posns.append([fin_row,fin_col])
-                    break
-    def move_queen(self,cell_row,cell_col):
-        self.move_bishop(cell_row,cell_col)
-        self.move_rook(cell_row,cell_col)
-    def move_king(self,cell_row,cell_col):
-        for row_inc in [-1,0,1]:
-            for col_inc in [-1,0,1]:
-                if row_inc == 0 and col_inc == 0:
-                    continue
-                fin_row = cell_row + row_inc
-                fin_col = cell_col + col_inc
-                if self.valid_cell(fin_row,fin_col):
-                    if not self.occupied(fin_row,fin_col):
-                        self.movable_posns.append([fin_row,fin_col])
-                    else:
-                        if self.has_enemy(fin_row,fin_col):
-                            self.movable_posns.append([fin_row,fin_col])
-
-    def valid_cell(self,row,col):
-        return 0<=row<=7 and 0<=col<=7
-    
-    def occupied(self,row,col):
-        return self.board_config[row][col] != ""
-    
-    def has_enemy(self,row,col):
-        if not self.occupied(row,col):
-            return False
-        return self.board_config[row][col][-5:] != self.current_move 
     def render_move_posns(self):
         for row,col in self.movable_posns:
-            if self.has_enemy(row,col):
+            if rules.has_enemy(self.board_config,row,col,self.current_move):
                 self.cells[row][col].highlight_enemy()
             else:
                 self.cells[row][col].highlight_free()

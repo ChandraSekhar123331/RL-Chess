@@ -1,6 +1,7 @@
 import pygame
 import sys
-
+from rl_player import rl_player
+import time
 from pygame.constants import K_ESCAPE
 # import random
 import chess_board
@@ -10,6 +11,7 @@ screen = pygame.display.set_mode((1100,800)) ## returns a surface called screen
 screen.fill([163, 217, 185])
 cell_w = cell_h = 800//8
 board = chess_board.Board(screen,cell_w,cell_h,"white")
+player = rl_player(64)
 
 while(True):
     for event in pygame.event.get():
@@ -29,6 +31,15 @@ while(True):
         if event.type == pygame.KEYDOWN:
             if event.key == K_ESCAPE:
                 board.handle_escape()
+
+    ans=player.get_move(board.board_config,board.current_move)
+    board.handle_mouse(ans[0][0],ans[0][1])
+    pygame.display.update()
+    time.sleep(0.5)
+    board.handle_mouse(ans[1][0],ans[1][1])
+    pygame.display.update()
+    time.sleep(0.5)
+    
     # left, middle, right = pygame.mouse.get_pressed()
     # if left:
     #     print('left_key_pressed')
@@ -38,6 +49,6 @@ while(True):
     #     print('middle_key_pressed')
     # screen.fill([150,120,100]) #order matters
     # pygame.draw.circle(screen,(0,0,255),(850,500),55) #order matters
-    clock.tick(60)
-    pygame.display.update() #updates display
+    # clock.tick(20)
+    # pygame.display.update() #updates display
 
