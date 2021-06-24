@@ -1,13 +1,12 @@
-import pygame
 import sys
-
-from pygame import display
-from rl_player import rl_player
 import time
-from pygame.constants import K_ESCAPE
 import copy
-# import random
+import pygame
 import chess_board
+from pygame import display
+from pygame.constants import K_ESCAPE
+from rl_player import rl_player
+
 pygame.init()
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((1100,800)) ## returns a surface called screen
@@ -29,37 +28,38 @@ while(True):
                 cell_col = x//cell_w
                 cell_row = y//cell_h
                 board.handle_mouse(cell_row,cell_col)
+                print(str(board.board))
             else:
                 print("please use left mouse key to select your piece to move.To cancel the selected piece click 'esc' key")
         if event.type == pygame.KEYDOWN:
             if event.key == K_ESCAPE:
                 board.handle_escape()
 
-    ans=player.get_move(board.board_config,board.current_move)
-    old_config = copy.deepcopy(board.board_config)
-    board.handle_mouse(ans[0][0],ans[0][1])
-    pygame.display.update()
-    time.sleep(0.1)
-    board.handle_mouse(ans[1][0],ans[1][1])
-    pygame.display.update()
-    new_config = board.board_config
-    winner = board.get_winner()
-    game_over = False
-    if winner == "noone":
-        player.update(0,old_config,new_config)
-    elif winner == "black":
-        player.update(1,old_config,new_config)
-        print("black has won")
-        game_over = True
-    else:
-        print(winner)
-        player.update(-1,old_config,new_config)
-        print("white has won")
-        game_over = True
-    time.sleep(0.1)
-    if game_over:
-        del board
-        board = chess_board.Board(screen,cell_w,cell_h,"white")
+    # ans=player.get_move(board.board_config,board.current_move)
+    # old_config = copy.deepcopy(board.board_config)
+    # board.handle_mouse(ans[0][0],ans[0][1])
+    # pygame.display.update()
+    # time.sleep(0.1)
+    # board.handle_mouse(ans[1][0],ans[1][1])
+    # pygame.display.update()
+    # new_config = board.board_config
+    # winner = board.get_winner()
+    # game_over = False
+    # if winner == "noone":
+    #     player.update(0,old_config,new_config)
+    # elif winner == "black":
+    #     player.update(1,old_config,new_config)
+    #     print("black has won")
+    #     game_over = True
+    # else:
+    #     print(winner)
+    #     player.update(-1,old_config,new_config)
+    #     print("white has won")
+    #     game_over = True
+    # time.sleep(0.1)
+    # if game_over:
+    #     del board
+    #     board = chess_board.Board(screen,cell_w,cell_h,"white")
     pygame.display.update()
 
     
