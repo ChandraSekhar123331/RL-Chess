@@ -5,7 +5,7 @@ class Linear:
             self.param = param_init
         else:
             self.param = np.zeros(dimension + 1)
-        self.dimension = dimension + 1 #+1 for the constant term
+        self.dimension = dimension + 1 #+1 for the constant term/bias term
         self.alpha = alpha
     # def logistic(self, x):
     #     """x is just a scalar here"""
@@ -22,6 +22,4 @@ class Linear:
         arg = feature_vector.dot(self.param)
         delta_param = self.alpha*(est_val-arg)*feature_vector
         self.param += delta_param
-    
-
     

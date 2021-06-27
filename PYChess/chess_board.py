@@ -1,4 +1,4 @@
-from re import T
+from rules import board_to_vec
 from Cell import Cell
 import chess
 class Board:
@@ -67,49 +67,6 @@ class Board:
             for j in range(8):
                 self.cells[i][j].render(self.get_image(i,j))
         
-
-    # def board_init(self):
-    #     self.board_config[0] = [
-    #         "rook_black",
-    #         "knight_black",
-    #         "bishop_black",
-    #         "queen_black",
-    #         "king_black",
-    #         "bishop_black",
-    #         "knight_black",
-    #         "rook_black",
-    #     ]
-    #     self.board_config[7] = [
-    #         "rook_white",
-    #         "knight_white",
-    #         "bishop_white",
-    #         "queen_white",
-    #         "king_white",
-    #         "bishop_white",
-    #         "knight_white",
-    #         "rook_white",
-    #     ]
-    #     self.board_config[1] = [
-    #         "pawn_black",
-    #         "pawn_black",
-    #         "pawn_black",
-    #         "pawn_black",
-    #         "pawn_black",
-    #         "pawn_black",
-    #         "pawn_black",
-    #         "pawn_black",
-    #     ]
-    #     self.board_config[6] = [
-    #         "pawn_white",
-    #         "pawn_white",
-    #         "pawn_white",
-    #         "pawn_white",
-    #         "pawn_white",
-    #         "pawn_white",
-    #         "pawn_white",
-    #         "pawn_white",
-    #     ]
-    #     return
     
     def handle_mouse(self,cell_row,cell_col):
         if self.is_selected:
@@ -150,7 +107,7 @@ class Board:
             return
         # self.is_selected = True ##this line is to be done only if movable positions is non_empty
         self.possible_moves = [str(move) for move in self.board.legal_moves if str(move).startswith(clicked_cell_name)]
-        print(self.possible_moves)
+        # print(self.possible_moves)
 
         if len(self.possible_moves) == 0:
             print("The selected piece has no possibility to move")
@@ -167,7 +124,7 @@ class Board:
     #     self.is_selected = False
     #     print("escape key was selected")
     def has_enemy(self,posn):
-        print(posn)
+        # print(posn)
         if self.board.piece_at(posn) == None:
             return False
         elif self.board.piece_at(posn).color is self.board.turn:
@@ -190,6 +147,31 @@ class Board:
         for posn in end_posns:
             row,col = self.get_row_col(posn)
             self.cells[row][col].reset()
+    def is_game_over(self):
+        return self.board.is_game_over(claim_draw=True)
+    def get_reward(self):
+        game_over = self.is_game_over()
+        if game_over:
+            outcome = self.board.outcome()
+            if outcome.winner == None:
+                return 0
+            elif outcome.winner == chess.WHITE:
+                return -1
+            else:
+                assert(outcome.winner == chess.BLACK)
+                return 1
+        else:
+            return 0
+    def print_winner(self):
+        assert(self.is_game_over() == True)
+        outcome = self.board.outcome()
+        if outcome.winner == None:
+            print("game is a draw")
+        elif outcome.winner == chess.WHITE:
+            print("white has won")
+        else:
+            assert(outcome.winner == chess.BLACK)
+            print("black has won")
     # def handle_board_config(self,cell_row,cell_col):
     #     #this is to maintain the board config after moving the selected piece to [cell_row,cell_col]
     #     self.board_config[cell_row][cell_col] = self.board_config[self.selected_piece[0]][self.selected_piece[1]]

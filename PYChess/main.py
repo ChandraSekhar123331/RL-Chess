@@ -1,6 +1,6 @@
 import sys
 import time
-import copy
+from copy import deepcopy
 import pygame
 import chess_board
 from pygame import display
@@ -35,13 +35,26 @@ while(True):
             if event.key == K_ESCAPE:
                 board.handle_escape()
 
-    # ans=player.get_move(board.board_config,board.current_move)
+    ans=player.get_move(deepcopy(board.board))
+    start_pos = board.get_row_col(ans[:2])
+    end_pos = board.get_row_col(ans[2:])
     # old_config = copy.deepcopy(board.board_config)
-    # board.handle_mouse(ans[0][0],ans[0][1])
-    # pygame.display.update()
-    # time.sleep(0.1)
-    # board.handle_mouse(ans[1][0],ans[1][1])
-    # pygame.display.update()
+    old_board = deepcopy(board.board)
+    board.handle_mouse(start_pos[0],start_pos[1])
+    pygame.display.update()
+    time.sleep(0.1)
+    board.handle_mouse(end_pos[0],end_pos[1])
+    new_board = deepcopy(board.board)
+    pygame.display.update()
+    time.sleep(0.1)
+    player.update(board.get_reward(),old_board,new_board)
+    if board.is_game_over():
+        board.print_winner()
+        del board
+        board = chess_board.Board(screen,cell_w,cell_h,"white")
+
+
+
     # new_config = board.board_config
     # winner = board.get_winner()
     # game_over = False
