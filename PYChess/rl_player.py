@@ -5,7 +5,7 @@ import chess
 class rl_player:
     def __init__(self,dimension):
         #dimension should say the size of linear approximator excluding the bias term.It is added inherently by the linear_approximator class 
-        self.epsilon = 0.1
+        self.epsilon = 0.3
         self.alpha = 0.01
         try:
             param_init = np.load("param.npy")
@@ -16,11 +16,15 @@ class rl_player:
 
     def get_move(self,board):
         np.save("param",self.model.param)
+        # print(np.load('param.npy'))
         current_turn = board.turn
         if current_turn == True:
             # its white turn.So goal is to pick the move that leads to min value location
-            legal_moves = [str(move) for move in board.legal_moves if not(board.is_castling(move)) and move.promotion == None]
+            legal_moves = [str(move) for move in board.legal_moves]
             random.shuffle(legal_moves) #this is just to ensure that if some have same value the we randomly pick the optimal one
+            random_num = self.rng.random()
+            if(random_num<self.epsilon):
+                return legal_moves[0]
             curr_min = None
             min_move = None
             for move in legal_moves:
@@ -39,10 +43,13 @@ class rl_player:
 
         else:
             #its black turn so goal is to pick a move that takes to max score position
-            legal_moves = [str(move) for move in board.legal_moves if not(board.is_castling(move)) and move.promotion == None]
+            legal_moves = [str(move) for move in board.legal_moves]
             curr_max = None
             max_move = None
             random.shuffle(legal_moves) #this is just to ensure that if some have same value the we randomly pick the optimal one
+            random_num = self.rng.random()
+            if(random_num<self.epsilon):
+                return legal_moves[0]
             for move in legal_moves:
                 board.push_san(move)
                 score = self.evaluate(board)

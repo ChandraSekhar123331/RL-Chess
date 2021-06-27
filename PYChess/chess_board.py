@@ -1,4 +1,3 @@
-from rules import board_to_vec
 from Cell import Cell
 import chess
 class Board:
@@ -148,7 +147,7 @@ class Board:
             row,col = self.get_row_col(posn)
             self.cells[row][col].reset()
     def is_game_over(self):
-        return self.board.is_game_over(claim_draw=True)
+        return self.board.is_game_over()
     def get_reward(self):
         game_over = self.is_game_over()
         if game_over:
@@ -172,6 +171,11 @@ class Board:
         else:
             assert(outcome.winner == chess.BLACK)
             print("black has won")
+    
+    def handle_move_string(self,move_string):
+        self.board.push_san(move_string)
+        self.image_render(black = [242, 156, 63],white = [255, 255, 255])
+
     # def handle_board_config(self,cell_row,cell_col):
     #     #this is to maintain the board config after moving the selected piece to [cell_row,cell_col]
     #     self.board_config[cell_row][cell_col] = self.board_config[self.selected_piece[0]][self.selected_piece[1]]
