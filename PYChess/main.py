@@ -35,7 +35,8 @@ while(True):
             if event.key == K_ESCAPE:
                 board.handle_escape()
 
-    ans=player.get_move(deepcopy(board.board))
+    ans=player.get_move_lookahead(deepcopy(board.board))
+    print(ans)
     # start_pos = board.get_row_col(ans[:2])
     # end_pos = board.get_row_col(ans[2:])
     old_board = deepcopy(board.board)
@@ -43,11 +44,11 @@ while(True):
     # old_config = copy.deepcopy(board.board_config)
     # board.handle_mouse(start_pos[0],start_pos[1])
     pygame.display.update()
-    time.sleep(0.1)
+    # time.sleep(0.1)
     # board.handle_mouse(end_pos[0],end_pos[1])
     new_board = deepcopy(board.board)
     pygame.display.update()
-    time.sleep(0.1)
+    # time.sleep(0.1)
     player.update(board.get_reward(),old_board,new_board)
     if board.is_game_over():
         board.print_winner()

@@ -1,12 +1,13 @@
 import numpy as np
 from linear_approximator import Linear
+from copy import deepcopy
 import random
 import chess
 class rl_player:
     def __init__(self,dimension):
         #dimension should say the size of linear approximator excluding the bias term.It is added inherently by the linear_approximator class 
         self.epsilon = 0.3
-        self.alpha = 0.01
+        self.alpha = 0.1
         try:
             param_init = np.load("param.npy")
             self.model = Linear(dimension,self.alpha,param_init)
@@ -14,55 +15,100 @@ class rl_player:
             self.model = Linear(dimension,self.alpha)
         self.rng = np.random.default_rng()
 
-    def get_move(self,board):
-        np.save("param",self.model.param)
+    def evaluate_board_lookahead(self,board,depth):
+        # print('eval called with depth = ',depth)
+        legal_moves = [str(move) for move in board.legal_moves]
+        np.random.shuffle(legal_moves)
+        score = None
+        #need to check for empty legal_moves
+        if len(legal_moves) == 0:
+            outcome = board.outcome(claim_draw = True)
+            assert(outcome is not None)
+            if outcome.winner == None:
+                score = 0
+            elif outcome.winner == chess.WHITE:
+                score = -1
+            else:
+                assert(outcome.winner == chess.BLACK)
+                score = 1
+            return score
+        if depth ==0:
+            return self.evaluate(board)
+        else:
+            current_turn = board.turn
+            if current_turn == chess.WHITE:
+                min_score = None
+                for move in legal_moves:
+                    temp_board = deepcopy(board)
+                    temp_board.push_san(move)
+                    score = self.evaluate_board_lookahead(temp_board,depth-1)
+                    if min_score == None:
+                        min_score = score
+                    elif score < min_score:
+                        min_score = score
+                    else:
+                        pass
+                return min_score
+            else:
+                assert(current_turn == chess.BLACK)
+                max_score = None
+                #need to check for empty legal_moves
+                for move in legal_moves:
+                    temp_board = deepcopy(board)
+                    temp_board.push_san(move)
+                    score = self.evaluate_board_lookahead(temp_board,depth-1)
+                    if max_score == None:
+                        max_score = score
+                    elif max_score < score:
+                        max_score = score
+                    else:
+                        pass
+                return max_score
+
+    def get_move_lookahead(self,board):
+        np.save("param.npy",self.model.param)
         # print(np.load('param.npy'))
         current_turn = board.turn
-        if current_turn == True:
-            # its white turn.So goal is to pick the move that leads to min value location
+        if current_turn == chess.WHITE:
             legal_moves = [str(move) for move in board.legal_moves]
-            random.shuffle(legal_moves) #this is just to ensure that if some have same value the we randomly pick the optimal one
-            random_num = self.rng.random()
-            if(random_num<self.epsilon):
-                return legal_moves[0]
-            curr_min = None
+            np.random.shuffle(legal_moves)
+            min_score = None
             min_move = None
+            assert(len(legal_moves)!=0)
             for move in legal_moves:
-                board.push_san(move)
-                score = self.evaluate(board)
-                if curr_min == None:
-                    curr_min = score
+                temp_board = deepcopy(board)
+                temp_board.push_san(move)
+                score = self.evaluate_board_lookahead(temp_board,2)
+                if min_score == None:
+                    min_score = score
                     min_move = move
-                elif score < curr_min:
-                    curr_min = score
+                elif score < min_score:
+                    min_score = score
                     min_move = move
                 else:
                     pass
-                board.pop()
-            return min_move    
-
+            return min_move
         else:
-            #its black turn so goal is to pick a move that takes to max score position
+            assert(current_turn == chess.BLACK)
             legal_moves = [str(move) for move in board.legal_moves]
-            curr_max = None
+            np.random.shuffle(legal_moves)
+            max_score = None
             max_move = None
-            random.shuffle(legal_moves) #this is just to ensure that if some have same value the we randomly pick the optimal one
-            random_num = self.rng.random()
-            if(random_num<self.epsilon):
-                return legal_moves[0]
+            assert(len(legal_moves)!=0)
             for move in legal_moves:
-                board.push_san(move)
-                score = self.evaluate(board)
-                if curr_max == None:
-                    curr_max = score
+                temp_board = deepcopy(board)
+                temp_board.push_san(move)
+                score = self.evaluate_board_lookahead(temp_board,2)
+                if max_score == None:
+                    max_score = score
                     max_move = move
-                elif curr_max < score:
-                    curr_max = score
+                elif max_score < score:
+                    max_score = score
                     max_move = move
                 else:
                     pass
-                board.pop()
-            return max_move    
+            return max_move
+
     
     def board_to_vec(self,board):
         ls = [0 for i in range(64)]

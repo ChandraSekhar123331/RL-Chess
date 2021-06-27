@@ -4,7 +4,7 @@ class Linear:
         if param_init:
             self.param = param_init
         else:
-            self.param = np.random.random(dimension + 1)
+            self.param = np.zeros(dimension + 1)
         self.dimension = dimension + 1 #+1 for the constant term/bias term
         self.alpha = alpha
     # def logistic(self, x):
@@ -22,4 +22,5 @@ class Linear:
         arg = feature_vector.dot(self.param)
         delta_param = self.alpha*(est_val-arg)*feature_vector
         self.param += delta_param
+        return 
     
