@@ -35,6 +35,7 @@ while(True):
             if event.key == K_ESCAPE:
                 board.handle_escape()
 
+    pygame.display.update()
     ans=player.get_move_lookahead(deepcopy(board.board))
     print(ans)
     # start_pos = board.get_row_col(ans[:2])

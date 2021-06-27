@@ -39,34 +39,40 @@ class rl_player:
             if current_turn == chess.WHITE:
                 min_score = None
                 for move in legal_moves:
-                    temp_board = deepcopy(board)
-                    temp_board.push_san(move)
-                    score = self.evaluate_board_lookahead(temp_board,depth-1)
+                    board.push_san(move)
+                    score = self.evaluate_board_lookahead(board,depth-1)
                     if min_score == None:
                         min_score = score
                     elif score < min_score:
                         min_score = score
                     else:
                         pass
+                    board.pop()
                 return min_score
             else:
                 assert(current_turn == chess.BLACK)
                 max_score = None
                 #need to check for empty legal_moves
                 for move in legal_moves:
-                    temp_board = deepcopy(board)
-                    temp_board.push_san(move)
-                    score = self.evaluate_board_lookahead(temp_board,depth-1)
+                    board = deepcopy(board)
+                    board.push_san(move)
+                    score = self.evaluate_board_lookahead(board,depth-1)
                     if max_score == None:
                         max_score = score
                     elif max_score < score:
                         max_score = score
                     else:
                         pass
+                    board.pop()
                 return max_score
 
-    def get_move_lookahead(self,board):
+    def get_move_lookahead(self,board,search_depth = 3):
         np.save("param.npy",self.model.param)
+        rand_num = self.rng.random()
+        if rand_num <self.epsilon:
+            legal_moves = [str(move) for move in board.legal_moves]
+            np.random.shuffle(legal_moves)
+            return legal_moves[0]
         # print(np.load('param.npy'))
         current_turn = board.turn
         if current_turn == chess.WHITE:
@@ -74,11 +80,12 @@ class rl_player:
             np.random.shuffle(legal_moves)
             min_score = None
             min_move = None
+            print(board)
             assert(len(legal_moves)!=0)
             for move in legal_moves:
                 temp_board = deepcopy(board)
                 temp_board.push_san(move)
-                score = self.evaluate_board_lookahead(temp_board,2)
+                score = self.evaluate_board_lookahead(temp_board,search_depth-1)
                 if min_score == None:
                     min_score = score
                     min_move = move
@@ -87,6 +94,8 @@ class rl_player:
                     min_move = move
                 else:
                     pass
+            print('-------------')
+            print(board)
             return min_move
         else:
             assert(current_turn == chess.BLACK)
@@ -94,11 +103,12 @@ class rl_player:
             np.random.shuffle(legal_moves)
             max_score = None
             max_move = None
+            print(board)
             assert(len(legal_moves)!=0)
             for move in legal_moves:
                 temp_board = deepcopy(board)
                 temp_board.push_san(move)
-                score = self.evaluate_board_lookahead(temp_board,2)
+                score = self.evaluate_board_lookahead(temp_board,search_depth-1)
                 if max_score == None:
                     max_score = score
                     max_move = move
@@ -107,6 +117,8 @@ class rl_player:
                     max_move = move
                 else:
                     pass
+            print('-------------')
+            print(board)
             return max_move
 
     
