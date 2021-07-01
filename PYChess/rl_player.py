@@ -6,7 +6,7 @@ import chess
 class rl_player:
     def __init__(self,dimension):
         #dimension should say the size of linear approximator excluding the bias term.It is added inherently by the linear_approximator class 
-        self.epsilon = 0.3
+        self.epsilon = 0.1
         self.alpha = 0.1
         try:
             param_init = np.load("param.npy")
@@ -15,8 +15,8 @@ class rl_player:
             self.model = Linear(dimension,self.alpha)
         self.rng = np.random.default_rng()
 
-    def evaluate_board_lookahead(self,board,depth):
-        # print('eval called with depth = ',depth)
+    def evaluate_board_lookahead(self,board,depth,alpha,beta):
+        #This is supposed to return a tuple of the position value and the best move at that place
         legal_moves = [str(move) for move in board.legal_moves]
         np.random.shuffle(legal_moves)
         score = None
@@ -27,46 +27,60 @@ class rl_player:
             if outcome.winner == None:
                 score = 0
             elif outcome.winner == chess.WHITE:
+                print("hope found for white")
+                print(board)
+                assert(False)
                 score = -1
             else:
                 assert(outcome.winner == chess.BLACK)
+                print('hope found for black')
+                print(board)
+                assert(False)
                 score = 1
-            return score
+            return (score,None)
         if depth ==0:
-            return self.evaluate(board)
+            return (self.evaluate(board),None)
         else:
             current_turn = board.turn
-            if current_turn == chess.WHITE:
-                min_score = None
-                for move in legal_moves:
-                    board.push_san(move)
-                    score = self.evaluate_board_lookahead(board,depth-1)
-                    if min_score == None:
-                        min_score = score
-                    elif score < min_score:
-                        min_score = score
+            score = None
+            best_move = None
+            for move in legal_moves:
+                board.push_san(move)
+                (child_val,_) = self.evaluate_board_lookahead(board,depth-1,alpha,beta)
+                board.pop()
+                if score == None :
+                    score = child_val
+                    best_move = move
+                else:
+                    if current_turn == chess.WHITE:
+                        if child_val < score:
+                            best_move = move
+                            score = child_val
                     else:
-                        pass
-                    board.pop()
-                return min_score
-            else:
-                assert(current_turn == chess.BLACK)
-                max_score = None
-                #need to check for empty legal_moves
-                for move in legal_moves:
-                    board = deepcopy(board)
-                    board.push_san(move)
-                    score = self.evaluate_board_lookahead(board,depth-1)
-                    if max_score == None:
-                        max_score = score
-                    elif max_score < score:
-                        max_score = score
+                        assert(current_turn == chess.BLACK)
+                        if child_val > score:
+                            best_move = move
+                            score = child_val
+                
+                #heres the pruning part and alpha,beta updating part
+                
+                if current_turn == chess.WHITE:
+                    if score <= alpha:
+                        return (score,best_move)
                     else:
-                        pass
-                    board.pop()
-                return max_score
+                        beta = min(beta,score)
+                else:
+                    if score >= beta:
+                        return (score,best_move)
+                    else:
+                        alpha = max(alpha,score)
+            return (score,best_move)
 
-    def get_move_lookahead(self,board,search_depth = 3):
+    def get_move_lookahead(self,board,search_depth = 5):
+        if board.turn == chess.WHITE:
+            print("white's turn now")
+        else:
+            print("black's turn now")
         np.save("param.npy",self.model.param)
         rand_num = self.rng.random()
         if rand_num <self.epsilon:
@@ -74,52 +88,9 @@ class rl_player:
             np.random.shuffle(legal_moves)
             return legal_moves[0]
         # print(np.load('param.npy'))
-        current_turn = board.turn
-        if current_turn == chess.WHITE:
-            legal_moves = [str(move) for move in board.legal_moves]
-            np.random.shuffle(legal_moves)
-            min_score = None
-            min_move = None
-            print(board)
-            assert(len(legal_moves)!=0)
-            for move in legal_moves:
-                temp_board = deepcopy(board)
-                temp_board.push_san(move)
-                score = self.evaluate_board_lookahead(temp_board,search_depth-1)
-                if min_score == None:
-                    min_score = score
-                    min_move = move
-                elif score < min_score:
-                    min_score = score
-                    min_move = move
-                else:
-                    pass
-            print('-------------')
-            print(board)
-            return min_move
-        else:
-            assert(current_turn == chess.BLACK)
-            legal_moves = [str(move) for move in board.legal_moves]
-            np.random.shuffle(legal_moves)
-            max_score = None
-            max_move = None
-            print(board)
-            assert(len(legal_moves)!=0)
-            for move in legal_moves:
-                temp_board = deepcopy(board)
-                temp_board.push_san(move)
-                score = self.evaluate_board_lookahead(temp_board,search_depth-1)
-                if max_score == None:
-                    max_score = score
-                    max_move = move
-                elif max_score < score:
-                    max_score = score
-                    max_move = move
-                else:
-                    pass
-            print('-------------')
-            print(board)
-            return max_move
+        alpha = -1e18
+        beta = +1e18
+        return self.evaluate_board_lookahead(deepcopy(board),search_depth,alpha,beta)[1]
 
     
     def board_to_vec(self,board):
