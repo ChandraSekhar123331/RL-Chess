@@ -3,8 +3,9 @@ from linear_approximator import Linear
 from copy import deepcopy
 import random
 import chess
+import time
 class rl_player:
-    def __init__(self,dimension):
+    def __init__(self,dimension = 64*12):
         #dimension should say the size of linear approximator excluding the bias term.It is added inherently by the linear_approximator class 
         self.epsilon = 0.1
         self.alpha = 0.1
@@ -14,6 +15,20 @@ class rl_player:
         except:
             self.model = Linear(dimension,self.alpha)
         self.rng = np.random.default_rng()
+        self.one_hot_coding = {
+            0:(chess.PAWN,chess.WHITE),
+            1:(chess.ROOK,chess.WHITE),
+            2:(chess.KNIGHT,chess.WHITE),
+            3:(chess.BISHOP,chess.WHITE),
+            4:(chess.KING,chess.WHITE),
+            5:(chess.QUEEN,chess.WHITE),
+            6:(chess.PAWN,chess.BLACK),
+            7:(chess.ROOK,chess.BLACK),
+            8:(chess.KNIGHT,chess.BLACK),
+            9:(chess.BISHOP,chess.BLACK),
+            10:(chess.KING,chess.BLACK),
+            11:(chess.QUEEN,chess.BLACK),
+        }
 
     def evaluate_board_lookahead(self,board,depth,alpha,beta):
         #This is supposed to return a tuple of the position value and the best move at that place
@@ -27,15 +42,9 @@ class rl_player:
             if outcome.winner == None:
                 score = 0
             elif outcome.winner == chess.WHITE:
-                print("hope found for white")
-                print(board)
-                assert(False)
                 score = -1
             else:
                 assert(outcome.winner == chess.BLACK)
-                print('hope found for black')
-                print(board)
-                assert(False)
                 score = 1
             return (score,None)
         if depth ==0:
@@ -47,7 +56,6 @@ class rl_player:
             for move in legal_moves:
                 board.push_san(move)
                 (child_val,_) = self.evaluate_board_lookahead(board,depth-1,alpha,beta)
-                board.pop()
                 if score == None :
                     score = child_val
                     best_move = move
@@ -55,25 +63,25 @@ class rl_player:
                     if current_turn == chess.WHITE:
                         if child_val < score:
                             best_move = move
-                            score = child_val
+                            score = min(score,child_val)
                     else:
                         assert(current_turn == chess.BLACK)
                         if child_val > score:
                             best_move = move
-                            score = child_val
+                            score = max(score,child_val)
+                board.pop()
                 
                 #heres the pruning part and alpha,beta updating part
                 
                 if current_turn == chess.WHITE:
-                    if score <= alpha:
-                        return (score,best_move)
-                    else:
-                        beta = min(beta,score)
+                    beta = min(beta,child_val)
                 else:
-                    if score >= beta:
-                        return (score,best_move)
-                    else:
-                        alpha = max(alpha,score)
+                    alpha = max(alpha,child_val)
+                
+                if beta <= alpha:
+                    break
+
+            self.update_by_est_value(board,score)
             return (score,best_move)
 
     def get_move_lookahead(self,board,search_depth = 5):
@@ -87,44 +95,60 @@ class rl_player:
             legal_moves = [str(move) for move in board.legal_moves]
             np.random.shuffle(legal_moves)
             return legal_moves[0]
-        # print(np.load('param.npy'))
-        alpha = -1e18
-        beta = +1e18
-        return self.evaluate_board_lookahead(deepcopy(board),search_depth,alpha,beta)[1]
+        alpha = -1*(10**18)
+        beta = 10**18
+        res = self.evaluate_board_lookahead(deepcopy(board),search_depth,alpha,beta)
+        print(res[0])
+        return res[1]
 
     
     def board_to_vec(self,board):
-        ls = [0 for i in range(64)]
+        ls = [0 for i in range(64*12)]
+
         for cell_num in range(64):
-            if board.piece_type_at(cell_num) == None:
-                ls[cell_num] = 0
-            elif board.piece_type_at(cell_num) == chess.PAWN:
-                ls[cell_num] = 1
-            elif board.piece_type_at(cell_num) == chess.ROOK:
-                ls[cell_num] = 5
-            elif board.piece_type_at(cell_num) == chess.KNIGHT:
-                ls[cell_num] = 3
-            elif board.piece_type_at(cell_num) == chess.BISHOP:
-                ls[cell_num] = 3
-            elif board.piece_type_at(cell_num) == chess.QUEEN:
-                ls[cell_num] = 9
-            elif board.piece_type_at(cell_num) == chess.KING:
-                ls[cell_num] = 2
-            else:
-                print(board.piece_type_at(cell_num))
-                assert(False)
-            if board.color_at(cell_num) == chess.WHITE:
-                ls[cell_num] *= -1
-        return ls[:]
+            for one_hot_index in range(12):
+                piece_type,col = self.one_hot_coding[one_hot_index]
+                if board.piece_type_at(cell_num) == piece_type and board.color_at(cell_num) == col:
+                    ls[cell_num*12+one_hot_index] = 1
+                else:
+                    ls[cell_num*12+one_hot_index] = 0
+        return ls
+        # ls = [0 for i in range(64)]
+        # for cell_num in range(64):
+        #     if board.piece_type_at(cell_num) == None:
+        #         ls[cell_num] = 0
+        #     elif board.piece_type_at(cell_num) == chess.PAWN:
+        #         ls[cell_num] = 1
+        #     elif board.piece_type_at(cell_num) == chess.ROOK:
+        #         ls[cell_num] = 5
+        #     elif board.piece_type_at(cell_num) == chess.KNIGHT:
+        #         ls[cell_num] = 3
+        #     elif board.piece_type_at(cell_num) == chess.BISHOP:
+        #         ls[cell_num] = 3
+        #     elif board.piece_type_at(cell_num) == chess.QUEEN:
+        #         ls[cell_num] = 9
+        #     elif board.piece_type_at(cell_num) == chess.KING:
+        #         ls[cell_num] = 2
+        #     else:
+        #         print(board.piece_type_at(cell_num))
+        #         assert(False)
+        #     if board.color_at(cell_num) == chess.WHITE:
+        #         ls[cell_num] *= -1
+        # return ls[:]
     def evaluate(self,board):
         return self.model.get_val(self.board_to_vec(board))
         
-    def update(self,reward,old_board,new_board):
+    def update_by_reward(self,reward,old_board,new_board):
         old_vec = self.board_to_vec(old_board)
         new_vec = self.board_to_vec(new_board)
         est_value = reward + self.model.get_val(new_vec)
         self.model.upd_param(est_value,old_vec)
         return 
+    def update_by_est_value(self,board,est_value):
+        # print(est_value)
+        self.model.upd_param(est_value,self.board_to_vec(board))
+        # time.sleep(0.01)
+        return
 
     # def get_move(self,board_config,current_move):
     #     np.save("param",self.model.param)

@@ -13,7 +13,7 @@ screen = pygame.display.set_mode((1100,800)) ## returns a surface called screen
 screen.fill([163, 217, 185])
 cell_w = cell_h = 800//8
 board = chess_board.Board(screen,cell_w,cell_h,"white")
-player = rl_player(64)
+player = rl_player()
 
 while(True):
     for event in pygame.event.get():
@@ -50,7 +50,7 @@ while(True):
     new_board = deepcopy(board.board)
     pygame.display.update()
     # time.sleep(0.1)
-    player.update(board.get_reward(),old_board,new_board)
+    player.update_by_reward(board.get_reward(),old_board,new_board)
     if board.is_game_over():
         board.print_winner()
         del board
