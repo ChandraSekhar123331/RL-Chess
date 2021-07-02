@@ -1,9 +1,7 @@
 import numpy as np
 from linear_approximator import Linear
 from copy import deepcopy
-import random
 import chess
-import time
 class rl_player:
     def __init__(self,dimension = 64*12):
         #dimension should say the size of linear approximator excluding the bias term.It is added inherently by the linear_approximator class 
@@ -29,7 +27,8 @@ class rl_player:
             10:(chess.KING,chess.BLACK),
             11:(chess.QUEEN,chess.BLACK),
         }
-
+        self.temp_model = deepcopy(self.model)
+        
     def evaluate_board_lookahead(self,board,depth,alpha,beta):
         #This is supposed to return a tuple of the position value and the best move at that place
         legal_moves = [str(move) for move in board.legal_moves]
@@ -84,7 +83,7 @@ class rl_player:
             self.update_by_est_value(board,score)
             return (score,best_move)
 
-    def get_move_lookahead(self,board,search_depth = 5):
+    def get_move_lookahead(self,board,search_depth = 4):
         if board.turn == chess.WHITE:
             print("white's turn now")
         else:
@@ -98,7 +97,10 @@ class rl_player:
         alpha = -1*(10**18)
         beta = 10**18
         res = self.evaluate_board_lookahead(deepcopy(board),search_depth,alpha,beta)
-        print(res[0])
+        self.model = deepcopy(self.temp_model)
+        # print(res[0])
+        # print(self.temp_model.param)
+        # print(self.model.param)
         return res[1]
 
     
@@ -146,7 +148,7 @@ class rl_player:
         return 
     def update_by_est_value(self,board,est_value):
         # print(est_value)
-        self.model.upd_param(est_value,self.board_to_vec(board))
+        self.temp_model.upd_param(est_value,self.board_to_vec(board))
         # time.sleep(0.01)
         return
 

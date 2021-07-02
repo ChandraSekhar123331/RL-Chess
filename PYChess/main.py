@@ -1,6 +1,7 @@
 import sys
 import time
 from copy import deepcopy
+from numpy.lib.shape_base import tile
 import pygame
 import chess_board
 from pygame import display
@@ -53,6 +54,7 @@ while(True):
     player.update_by_reward(board.get_reward(),old_board,new_board)
     if board.is_game_over():
         board.print_winner()
+        time.sleep(15)
         del board
         board = chess_board.Board(screen,cell_w,cell_h,"white")
 
